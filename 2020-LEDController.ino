@@ -14,13 +14,14 @@ CRGB color;
 
 void setup() {
   Serial.begin(9600);
-  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, LED_COUNT);
+  FastLED.addLeds<WS2812, LED_PIN, RGB>(leds, LED_COUNT);
 }
 
 void loop() {
   int availableBytes = Serial.available();
   if (availableBytes > 0) {
     Serial.readBytes(packet, availableBytes);
+    Serial.println("Thing");
     switch (packet[0]) {
       case 0x00:
         eraseAll();
@@ -34,8 +35,9 @@ void loop() {
       case 0x03:
         break;
     }
-    FastLED.show();
+    pushLED();
   }
+  FastLED.show();
 }
 
 void eraseAll() {
@@ -46,7 +48,11 @@ void eraseAll() {
 }
 
 void pushLED() {
-  color = CRGB(0, 0, 0);
+  for (i = LED_COUNT - 1; i > 0; i--) {
+    leds[i] = leds[i - 1];
+  }
+  color = CRGB(packet[1], packet[2], packet[3]);
+  leds[i] = color;
 }
 
 void overwriteLEDs() {
